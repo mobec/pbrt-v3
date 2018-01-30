@@ -872,6 +872,23 @@ Film *MakeFilm(const std::string &name, const ParamSet &paramSet,
     return film;
 }
 
+std::vector<std::shared_ptr<Film>> MakeFilmEx(const uint32_t uCount, const ParamSet &filmParamSet, const std::string &filterName, const ParamSet &filterParamSet)
+{
+	std::vector<std::shared_ptr<Film>> Films;
+	for (size_t i = 0; i < uCount; i++)
+	{
+		ParamSet nextFilm(filmParamSet);
+		std::string sFile = nextFilm.FindOneString("filename", "pbrt.exr");
+		std::unique_ptr<std::string[]> strings(new std::string[1]); // wtf why would someone want to do this??!
+		strings[0] = sFile + std::to_string((uint32_t)i) + ".png";
+		nextFilm.AddString("filename", std::move(strings), 1);
+		Films.emplace_back(CreateFilm(nextFilm, std::move(MakeFilter(filterName, filterParamSet))));
+	}
+
+	filmParamSet.ReportUnused();
+	return Films;
+}
+
 // API Function Definitions
 void pbrtInit(const Options &opt) {
     PbrtOptions = opt;
@@ -1687,7 +1704,10 @@ Integrator *RenderOptions::MakeIntegrator() const {
     else if (IntegratorName == "path")
         integrator = CreatePathIntegrator(IntegratorParams, sampler, camera);
 	else if (IntegratorName == "superpath")
-		integrator = CreateSuperPathIntegrator(IntegratorParams, sampler, camera);
+	{
+		integrator = CreateSuperPathIntegrator(IntegratorParams, sampler, camera,
+			MakeFilmEx(sampler->samplesPerPixel, FilmParams, FilterName, FilterParams));
+	}
     else if (IntegratorName == "volpath")
         integrator = CreateVolPathIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "bdpt") {

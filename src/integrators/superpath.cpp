@@ -49,12 +49,17 @@ namespace pbrt {
 	SuperPathIntegrator::SuperPathIntegrator(int maxDepth,
 		std::shared_ptr<const Camera> camera,
 		std::shared_ptr<Sampler> sampler,
-		const Bounds2i &pixelBounds, Float rrThreshold,
+		const Bounds2i &pixelBounds,
+		const std::vector<std::shared_ptr<Film>>& _films, 
+		Float rrThreshold,
 		const std::string &lightSampleStrategy)
 		: SamplerIntegrator(camera, sampler, pixelBounds),
 		maxDepth(maxDepth),
 		rrThreshold(rrThreshold),
-		lightSampleStrategy(lightSampleStrategy) {}
+		lightSampleStrategy(lightSampleStrategy)
+	{
+
+	}
 
 	void SuperPathIntegrator::Preprocess(const Scene &scene, Sampler &sampler) {
 		lightDistribution =
@@ -190,7 +195,8 @@ namespace pbrt {
 
 	SuperPathIntegrator *CreateSuperPathIntegrator(const ParamSet &params,
 		std::shared_ptr<Sampler> sampler,
-		std::shared_ptr<const Camera> camera) {
+		std::shared_ptr<const Camera> camera,
+		const std::vector<std::shared_ptr<Film>>& _films) {
 		int maxDepth = params.FindOneInt("maxdepth", 5);
 		int np;
 		const int *pb = params.FindInt("pixelbounds", &np);
@@ -210,7 +216,7 @@ namespace pbrt {
 		std::string lightStrategy =
 			params.FindOneString("lightsamplestrategy", "spatial");
 		return new SuperPathIntegrator(maxDepth, camera, sampler, pixelBounds,
-			rrThreshold, lightStrategy);
+			_films, rrThreshold, lightStrategy);
 	}
 
 }  // namespace pbrt
