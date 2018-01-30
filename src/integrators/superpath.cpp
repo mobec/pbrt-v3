@@ -90,10 +90,10 @@ namespace pbrt {
 			// Possibly add emitted light at intersection
 			if (bounces == 0 || specularBounce) {
 				// Add emitted light at path vertex or from the environment
-				if (foundIntersection) {
-					L += beta * isect.Le(-ray.d);
-					VLOG(2) << "Added Le -> L = " << L;
-				}
+				//if (foundIntersection) {
+				//	L += beta * isect.Le(-ray.d);
+				//	VLOG(2) << "Added Le -> L = " << L;
+				//}
 				//else {
 				//	for (const auto &light : scene.infiniteLights)
 				//		L += beta * light->Le(ray);
@@ -120,7 +120,7 @@ namespace pbrt {
 			if (isect.bsdf->NumComponents(BxDFType(BSDF_ALL & ~BSDF_SPECULAR)) >
 				0) {
 				++totalPaths;
-				Spectrum Ld = beta * UniformSampleOneLight(isect, scene, arena,
+				Spectrum Ld = beta * UniformSampleOneLightEnv(isect, scene, arena,
 					sampler, false, distrib);
 				VLOG(2) << "Sampled direct lighting Ld = " << Ld;
 				if (Ld.IsBlack()) ++zeroRadiancePaths;
