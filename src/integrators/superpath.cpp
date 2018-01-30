@@ -94,11 +94,11 @@ namespace pbrt {
 					L += beta * isect.Le(-ray.d);
 					VLOG(2) << "Added Le -> L = " << L;
 				}
-				else {
-					for (const auto &light : scene.infiniteLights)
-						L += beta * light->Le(ray);
-					VLOG(2) << "Added infinite area lights -> L = " << L;
-				}
+				//else {
+				//	for (const auto &light : scene.infiniteLights)
+				//		L += beta * light->Le(ray);
+				//	VLOG(2) << "Added infinite area lights -> L = " << L;
+				//}
 			}
 
 			// Terminate path if ray escaped or _maxDepth_ was reached
