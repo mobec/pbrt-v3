@@ -90,8 +90,9 @@ class SamplerIntegrator : public Integrator {
     // SamplerIntegrator Public Methods
     SamplerIntegrator(std::shared_ptr<const Camera> camera,
                       std::shared_ptr<Sampler> sampler,
-                      const Bounds2i &pixelBounds)
-        : camera(camera), sampler(sampler), pixelBounds(pixelBounds) {}
+                      const Bounds2i &pixelBounds,
+		std::vector<std::shared_ptr<Film>> _films = {})
+        : camera(camera), sampler(sampler), pixelBounds(pixelBounds), films(_films) {}
     virtual void Preprocess(const Scene &scene, Sampler &sampler) {}
     void Render(const Scene &scene);
     virtual Spectrum Li(const RayDifferential &ray, const Scene &scene,
@@ -106,10 +107,13 @@ class SamplerIntegrator : public Integrator {
                               const Scene &scene, Sampler &sampler,
                               MemoryArena &arena, int depth) const;
 
+	void RenderSingleFilm(const Scene &scene);
+	void RenderMultiFilm(const Scene &scene);
+
   protected:
     // SamplerIntegrator Protected Data
     std::shared_ptr<const Camera> camera;
-
+	std::vector<std::shared_ptr<Film>> films;
   private:
     // SamplerIntegrator Private Data
     std::shared_ptr<Sampler> sampler;

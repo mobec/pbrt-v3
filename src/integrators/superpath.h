@@ -66,7 +66,6 @@ namespace pbrt {
 		const Float rrThreshold;
 		const std::string lightSampleStrategy;
 		std::unique_ptr<LightDistribution> lightDistribution;
-		std::vector<std::shared_ptr<Film>> films;
 	};
 
 	SuperPathIntegrator *CreateSuperPathIntegrator(const ParamSet &params,

@@ -53,7 +53,7 @@ namespace pbrt {
 		const std::vector<std::shared_ptr<Film>>& _films, 
 		Float rrThreshold,
 		const std::string &lightSampleStrategy)
-		: SamplerIntegrator(camera, sampler, pixelBounds),
+		: SamplerIntegrator(camera, sampler, pixelBounds, _films),
 		maxDepth(maxDepth),
 		rrThreshold(rrThreshold),
 		lightSampleStrategy(lightSampleStrategy)
