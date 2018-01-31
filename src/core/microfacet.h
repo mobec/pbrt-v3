@@ -129,18 +129,26 @@ inline Float TrowbridgeReitzDistribution::RoughnessToAlpha(Float roughness) {
 }
 
 class BlinnPhongDistribution : public MicrofacetDistribution {
-  public:
-    static inline Float RoughnessToAlpha(Float roughness);
-    BlinnPhongDistribution(Float alpha, bool samplevis=true)
-    : MicrofacetDistribution(samplevis), alpha(alpha) {}
-    
-    Float D(const Vector3f &wh) const;
-    Vector3f Sample_wh(const Vector3f &wo, const Point2f &u) const;
-    std::string ToString() const;
-    
-  private:
-    const Float alpha;
+public:
+	static inline Float RoughnessToAlpha(Float roughness);
+	BlinnPhongDistribution(Float alpha, bool samplevis = true)
+		: MicrofacetDistribution(samplevis), alpha(alpha) {}
+
+	Float D(const Vector3f &wh) const;
+	Vector3f Sample_wh(const Vector3f &wo, const Point2f &u) const;
+
+	Float G(const Vector3f &wo, const Vector3f &wi) const;
+
+	std::string ToString() const;
+
+private:
+	const Float alpha;
 };
+
+inline Float BlinnPhongDistribution::RoughnessToAlpha(Float roughness) {
+	return 2.0f / std::powf(roughness, 4.0f) - 2.0f;
+}
+
     
 }  // namespace pbrt
 
