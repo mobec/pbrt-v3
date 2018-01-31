@@ -136,13 +136,18 @@ class BlinnPhongDistribution : public MicrofacetDistribution {
     
     Float D(const Vector3f &wh) const;
     Vector3f Sample_wh(const Vector3f &wo, const Point2f &u) const;
+
+	Float G(const Vector3f &wo, const Vector3f &wi) const;
+
     std::string ToString() const;
     
   private:
-    Float Lambda(const Vector3f &w) const;
-    
     const Float alpha;
 };
+
+inline Float BlinnPhongDistribution::RoughnessToAlpha(Float roughness) {
+	return 2.0f / std::powf(roughness, 4.0f) - 2.0f;
+}
     
 }  // namespace pbrt
 
