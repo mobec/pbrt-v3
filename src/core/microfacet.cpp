@@ -189,15 +189,8 @@ Float TrowbridgeReitzDistribution::Lambda(const Vector3f &w) const {
 }
     
 Float BlinnPhongDistribution::Lambda(const Vector3f &w) const {
-//    Float absTanTheta = std::abs(TanTheta(w));
-//    if (std::isinf(absTanTheta)) return 0.;
-//    // Compute _alpha_ for direction _w_
-//    Float tmpAlpha =
-//    std::sqrt(Cos2Phi(w) * alpha * alpha + Sin2Phi(w) * alpha * alpha);
-//    Float a = 1 / (tmpAlpha * absTanTheta);
-//    if (a >= 1.6f) return 0;
-//    return (1 - 1.259f * a + 0.396f * a * a) / (3.535f * a + 2.181f * a * a);
-    return 1.0f;
+    Float cosTheta = CosTheta(w);
+    return 1.0f / cosTheta - 1.0f;
 }
 
 std::string BeckmannDistribution::ToString() const {

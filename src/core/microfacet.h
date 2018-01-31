@@ -147,7 +147,7 @@ private:
 };
 
 inline Float BlinnPhongDistribution::RoughnessToAlpha(Float roughness) {
-    roughness = fmaxf(0.1189147662f, roughness); // clamp exponent to 10000
+    roughness = fmaxf(0.00668740305, roughness); // clamp exponent to 10000
 	return 2.0f / std::powf(roughness, 4.0f) - 2.0f;
 }
 
