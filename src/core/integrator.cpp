@@ -616,6 +616,8 @@ void SamplerIntegrator::RenderMultiFilm(const Scene & scene)
 				filmTiles.emplace_back(films[s]->GetFilmTile(tileBounds));
 			}
 
+			//std::unique_ptr<FilmTile> aggregateFilmTile = camera->film->GetFilmTile(tileBounds);
+
 			// Loop over pixels in tile to render them
 			for (Point2i pixel : tileBounds) {
 				{
@@ -677,7 +679,9 @@ void SamplerIntegrator::RenderMultiFilm(const Scene & scene)
 						ray << " -> L = " << L;
 
 					// Add camera ray's contribution to image
-					filmTile->AddSample(cameraSample.pFilm, L, rayWeight);
+					filmTile->AddSample(cameraSample.pFilm, L, 1.0);
+
+					//aggregateFilmTile->AddSample(cameraSample.pFilm, L, rayWeight);
 
 					// Free _MemoryArena_ memory from computing image sample
 					// value
@@ -692,6 +696,8 @@ void SamplerIntegrator::RenderMultiFilm(const Scene & scene)
 				films[s]->MergeFilmTile(std::move(filmTiles[s]));
 			}
 
+			//camera->film->MergeFilmTile(std::move(aggregateFilmTile));
+
 			reporter.Update();
 		}, nTiles);
 		reporter.Done();
@@ -699,6 +705,8 @@ void SamplerIntegrator::RenderMultiFilm(const Scene & scene)
 	LOG(INFO) << "Rendering finished";
 
 	// Save final image after rendering
+	camera->film->WriteImage();
+
 	for (auto& film : films)
 	{
 		film->WriteImage();

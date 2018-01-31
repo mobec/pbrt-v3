@@ -88,17 +88,17 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
         bool foundIntersection = scene.Intersect(ray, &isect);
 
         // Possibly add emitted light at intersection
-        if (bounces == 0 || specularBounce) {
-            // Add emitted light at path vertex or from the environment
-            if (foundIntersection) {
-                L += beta * isect.Le(-ray.d);
-                VLOG(2) << "Added Le -> L = " << L;
-            } else {
-                for (const auto &light : scene.infiniteLights)
-                    L += beta * light->Le(ray);
-                VLOG(2) << "Added infinite area lights -> L = " << L;
-            }
-        }
+        //if (bounces == 0 || specularBounce) {
+        //    // Add emitted light at path vertex or from the environment
+        //    if (foundIntersection) {
+        //        L += beta * isect.Le(-ray.d);
+        //        VLOG(2) << "Added Le -> L = " << L;
+        //    } else {
+        //        for (const auto &light : scene.infiniteLights)
+        //            L += beta * light->Le(ray);
+        //        VLOG(2) << "Added infinite area lights -> L = " << L;
+        //    }
+        //}
 
         // Terminate path if ray escaped or _maxDepth_ was reached
         if (!foundIntersection || bounces >= maxDepth) break;

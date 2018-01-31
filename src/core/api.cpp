@@ -879,8 +879,10 @@ std::vector<std::shared_ptr<Film>> MakeFilmEx(const uint32_t uCount, const Param
 	{
 		ParamSet nextFilm(filmParamSet);
 		std::string sFile = nextFilm.FindOneString("filename", "pbrt.exr");
+		size_t uPos = sFile.find_last_of(".");
+		sFile.insert(uPos, "_" + std::to_string(i));
 		std::unique_ptr<std::string[]> strings(new std::string[1]); // wtf why would someone want to do this??!
-		strings[0] = sFile + std::to_string((uint32_t)i) + ".png";
+		strings[0] = sFile;
 		nextFilm.AddString("filename", std::move(strings), 1);
 		Films.emplace_back(CreateFilm(nextFilm, std::move(MakeFilter(filterName, filterParamSet))));
 	}
