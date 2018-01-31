@@ -58,7 +58,20 @@ namespace pbrt {
 
 		void Preprocess(const Scene &scene, Sampler &sampler);
 		Spectrum Li(const RayDifferential &ray, const Scene &scene,
-			Sampler &sampler, MemoryArena &arena, int depth) const;
+			Sampler &sampler, MemoryArena &arena, int depth, const int64_t uCurSample = 0) const final;
+
+	private:
+		Spectrum UniformSampleOneLightEnv(const Interaction &it, const Scene &scene,
+			MemoryArena &arena, Sampler &sampler,
+			bool handleMedia = false,
+			const Distribution1D *lightDistrib = nullptr,
+			const int64_t uCurSample = 0) const;
+
+		Spectrum EstimateDirectEnv(const Interaction &it, const Point2f &uShading,
+			const Light &light, const Point2f &uLight,
+			const Scene &scene, Sampler &sampler,
+			MemoryArena &arena, bool handleMedia = false,
+			bool specular = false) const;
 
 	private:
 		// PathIntegrator Private Data

@@ -43,7 +43,7 @@ namespace pbrt {
 // WhittedIntegrator Method Definitions
 Spectrum WhittedIntegrator::Li(const RayDifferential &ray, const Scene &scene,
                                Sampler &sampler, MemoryArena &arena,
-                               int depth) const {
+                               int depth, const int64_t uCurSample = 0) const {
     Spectrum L(0.);
     // Find closest ray intersection or return background radiance
     SurfaceInteraction isect;

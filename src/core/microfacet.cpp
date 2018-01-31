@@ -166,7 +166,7 @@ Float BlinnPhongDistribution::D(const Vector3f &wh) const {
     return 0.0f;
 }
 
-Float BlinnPhongDistribution::Lambda(<#const Vector3f &w#>)const {
+Float BlinnPhongDistribution::Lambda(const Vector3f &w)const {
     return 0.0f;
 }
     
