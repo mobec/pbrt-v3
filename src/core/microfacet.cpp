@@ -162,6 +162,14 @@ Float TrowbridgeReitzDistribution::D(const Vector3f &wh) const {
     return 1 / (Pi * alphax * alphay * cos4Theta * (1 + e) * (1 + e));
 }
 
+Float BlinnPhongDistribution::D(const Vector3f &wh) const {
+    return 0.0f;
+}
+
+Float BlinnPhongDistribution::Lambda(<#const Vector3f &w#>)const {
+    return 0.0f;
+}
+    
 Float BeckmannDistribution::Lambda(const Vector3f &w) const {
     Float absTanTheta = std::abs(TanTheta(w));
     if (std::isinf(absTanTheta)) return 0.;
