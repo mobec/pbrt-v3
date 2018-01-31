@@ -166,21 +166,6 @@ Float BlinnPhongDistribution::D(const Vector3f &wh) const {
 	float cosThetaH = AbsCosTheta(wh);
 	return (alpha + 2) * Inv2Pi * powf(cosThetaH, alpha);
 }
-
-Vector3f BlinnPhongDistribution::Sample_wh(const Vector3f & wo, const Point2f & u) const
-{
-	return Vector3f();
-}
-
-Float BlinnPhongDistribution::G(const Vector3f & wo, const Vector3f & wi) const
-{
-	return CosTheta(wo) * CosTheta(wi);
-}
-
-std::string BlinnPhongDistribution::ToString() const
-{
-	return StringPrintf("[ BlinnPhong alpha: %f]", alpha);
-}
     
 Float BeckmannDistribution::Lambda(const Vector3f &w) const {
     Float absTanTheta = std::abs(TanTheta(w));
@@ -201,6 +186,17 @@ Float TrowbridgeReitzDistribution::Lambda(const Vector3f &w) const {
         std::sqrt(Cos2Phi(w) * alphax * alphax + Sin2Phi(w) * alphay * alphay);
     Float alpha2Tan2Theta = (alpha * absTanTheta) * (alpha * absTanTheta);
     return (-1 + std::sqrt(1.f + alpha2Tan2Theta)) / 2;
+}
+    
+Float BlinnPhongDistribution::Lambda(const Vector3f &w) const {
+    Float absTanTheta = std::abs(TanTheta(w));
+    if (std::isinf(absTanTheta)) return 0.;
+    // Compute _alpha_ for direction _w_
+    Float tmpAlpha =
+    std::sqrt(Cos2Phi(w) * alpha * alpha + Sin2Phi(w) * alpha * alpha);
+    Float a = 1 / (tmpAlpha * absTanTheta);
+    if (a >= 1.6f) return 0;
+    return (1 - 1.259f * a + 0.396f * a * a) / (3.535f * a + 2.181f * a * a);
 }
 
 std::string BeckmannDistribution::ToString() const {
@@ -353,6 +349,27 @@ Vector3f TrowbridgeReitzDistribution::Sample_wh(const Vector3f &wo,
         if (flip) wh = -wh;
     }
     return wh;
+}
+
+Vector3f BlinnPhongDistribution::Sample_wh(const Vector3f & wo, const Point2f & u) const
+{
+    Vector3f wh;
+    float cosTheta = powf(u.x, 1.f / (alpha+1));
+    float sinTheta = sqrtf(fmaxf(0.f, 1.f - cosTheta*cosTheta));
+    float phi = u.y * 2.f * M_PI;
+    wh = SphericalDirection(sinTheta, cosTheta, phi);
+    if (!SameHemisphere(wo, wh)) wh = -wh;
+    return wh;
+}
+
+Float BlinnPhongDistribution::G(const Vector3f & wo, const Vector3f & wi) const
+{
+    return CosTheta(wo) * CosTheta(wi);
+}
+
+std::string BlinnPhongDistribution::ToString() const
+{
+    return StringPrintf("[ BlinnPhong alpha: %f]", alpha);
 }
 
 Float MicrofacetDistribution::Pdf(const Vector3f &wo,

@@ -134,7 +134,7 @@ public:
 	BlinnPhongDistribution(Float alpha, bool samplevis = true)
 		: MicrofacetDistribution(samplevis), alpha(alpha) {}
 
-	Float D(const Vector3f &wh) const;
+    Float D(const Vector3f &wh) const;
 	Vector3f Sample_wh(const Vector3f &wo, const Point2f &u) const;
 
 	Float G(const Vector3f &wo, const Vector3f &wi) const;
@@ -142,10 +142,12 @@ public:
 	std::string ToString() const;
 
 private:
-	const Float alpha;
+    Float Lambda(const Vector3f &w) const;
+    const Float alpha;
 };
 
 inline Float BlinnPhongDistribution::RoughnessToAlpha(Float roughness) {
+    roughness = fmaxf(0.1189147662f, roughness); // clamp exponent to 10000
 	return 2.0f / std::powf(roughness, 4.0f) - 2.0f;
 }
 

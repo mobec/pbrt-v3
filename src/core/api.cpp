@@ -77,6 +77,7 @@
 #include "materials/metal.h"
 #include "materials/mirror.h"
 #include "materials/mixmat.h"
+#include "materials/phong.h"
 #include "materials/plastic.h"
 #include "materials/substrate.h"
 #include "materials/subsurface.h"
@@ -581,6 +582,8 @@ std::shared_ptr<Material> MakeMaterial(const std::string &name,
         material = CreateMixMaterial(mp, mat1, mat2);
     } else if (name == "metal")
         material = CreateMetalMaterial(mp);
+    else if (name == "phong")
+        material = CreatePhongMaterial(mp);
     else if (name == "substrate")
         material = CreateSubstrateMaterial(mp);
     else if (name == "uber")
