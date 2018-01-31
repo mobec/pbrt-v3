@@ -139,8 +139,6 @@ class BlinnPhongDistribution : public MicrofacetDistribution {
     std::string ToString() const;
     
   private:
-    Float Lambda(const Vector3f &w) const;
-    
     const Float alpha;
 };
     

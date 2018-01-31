@@ -163,11 +163,18 @@ Float TrowbridgeReitzDistribution::D(const Vector3f &wh) const {
 }
 
 Float BlinnPhongDistribution::D(const Vector3f &wh) const {
-    return 0.0f;
+	float cosThetaH = AbsCosTheta(wh);
+	return (alpha + 2) * Inv2Pi * powf(cosThetaH, alpha);
 }
 
-Float BlinnPhongDistribution::Lambda(const Vector3f &w)const {
-    return 0.0f;
+Vector3f BlinnPhongDistribution::Sample_wh(const Vector3f & wo, const Point2f & u) const
+{
+	return Vector3f();
+}
+
+Float BlinnPhongDistribution::G(const Vector3f & wo, const Vector3f & wi) const
+{
+	return CosTheta(wo) * CosTheta(wi);
 }
     
 Float BeckmannDistribution::Lambda(const Vector3f &w) const {
