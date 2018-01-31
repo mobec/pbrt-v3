@@ -176,6 +176,11 @@ Float BlinnPhongDistribution::G(const Vector3f & wo, const Vector3f & wi) const
 {
 	return CosTheta(wo) * CosTheta(wi);
 }
+
+std::string BlinnPhongDistribution::ToString() const
+{
+	return StringPrintf("[ BlinnPhong alpha: %f]", alpha);
+}
     
 Float BeckmannDistribution::Lambda(const Vector3f &w) const {
     Float absTanTheta = std::abs(TanTheta(w));
