@@ -66,18 +66,24 @@ namespace pbrt {
 		// is not really needed because we only have one light
 		lightDistribution =	CreateLightSampleDistribution(lightSampleStrategy, scene);
 
-		std::unique_ptr<Sampler> lightSampler = sampler.Clone(0);
-		std::unique_ptr<Sampler> scatterSampler = sampler.Clone(0);
-		lightSampler->StartPixel({});
-		scatterSampler->StartPixel({});
+		std::unique_ptr<Sampler> pLightSampler = sampler.Clone(0xB00B5);
+		pLightSampler->StartPixel({});
+
+		//std::unique_ptr<Sampler> pScatterSampler = sampler.Clone(0xA55A55);
+		//pScatterSampler->StartPixel({});
 
 		uLights.resize(sampler.samplesPerPixel);
 		uScatters.resize(sampler.samplesPerPixel);
 
 		for (size_t i = 0; i < sampler.samplesPerPixel; i++)
 		{
-			uLights[i] = lightSampler->Get2D();
-			uScatters[i] = scatterSampler->Get2D();
+			uLights[i] = pLightSampler->Get2D();
+			//uScatters[i] = pScatterSampler->Get2D();
+		}
+
+		for (size_t i = 0; i < sampler.samplesPerPixel; i++)
+		{
+			uScatters[i] = pLightSampler->Get2D();
 		}
 	}
 
