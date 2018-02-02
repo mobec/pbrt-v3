@@ -116,11 +116,13 @@ namespace pbrt {
 				bool foundIntersection = scene.Intersect(ray, &m_Isect);
 				m_pMaterial->ComputeScatteringFunctions(&m_Isect, m_Arena, pbrt::TransportMode::Radiance, true);
 			}
-
-			for (auto& u : uScatters) 
+			
+			for (size_t i = 0; i <  sampler.samplesPerPixel; i++)
 			{
-				out << ComputeWh(u).z << ",";
+				out << ComputeWh(uScatters[i]).z;					
+				if(i+1 <sampler.samplesPerPixel) out << ",";
 			}
+
 			out.close();
 		}
 
