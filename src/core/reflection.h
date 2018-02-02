@@ -181,6 +181,9 @@ class BSDF {
     Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &u,
                       Float *pdf, BxDFType type = BSDF_ALL,
                       BxDFType *sampledType = nullptr) const;
+
+	Vector3f GetWh(const Point2f &u,BxDFType type = BSDF_ALL) const;
+
     Float Pdf(const Vector3f &wo, const Vector3f &wi,
               BxDFType flags = BSDF_ALL) const;
     std::string ToString() const;
@@ -217,6 +220,9 @@ class BxDF {
     virtual Spectrum Sample_f(const Vector3f &wo, Vector3f *wi,
                               const Point2f &sample, Float *pdf,
                               BxDFType *sampledType = nullptr) const;
+
+	virtual Vector3f GetWh(const Point2f &sample, BxDFType *sampledType = nullptr) const { return {}; };
+
     virtual Spectrum rho(const Vector3f &wo, int nSamples,
                          const Point2f *samples) const;
     virtual Spectrum rho(int nSamples, const Point2f *samples1,
@@ -438,6 +444,9 @@ class MicrofacetReflection : public BxDF {
     Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
     Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &u,
                       Float *pdf, BxDFType *sampledType) const;
+
+	Vector3f GetWh(const Point2f &sample, BxDFType *sampledType = nullptr) const final;
+
     Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
     std::string ToString() const;
 

@@ -53,6 +53,7 @@ namespace pbrt {
 			std::shared_ptr<Sampler> sampler,
 			const Bounds2i &pixelBounds,
 			const std::vector<std::shared_ptr<Film>>& _films,
+			const std::shared_ptr<Material>& _pMaterial,
 			Float rrThreshold = 1,
 			const std::string &lightSampleStrategy = "spatial");
 
@@ -73,18 +74,25 @@ namespace pbrt {
 			MemoryArena &arena, bool handleMedia = false,
 			bool specular = false) const;
 
+		Vector3f ComputeWh(const Point2f &u);
+
 	private:
 		// PathIntegrator Private Data
 		const int maxDepth;
 		const Float rrThreshold;
 		const std::string lightSampleStrategy;
 		std::unique_ptr<LightDistribution> lightDistribution;
+		std::shared_ptr<Material> m_pMaterial;
+		MemoryArena m_Arena;
+		SurfaceInteraction m_Isect;
+
 	};
 
 	SuperPathIntegrator *CreateSuperPathIntegrator(const ParamSet &params,
 		std::shared_ptr<Sampler> sampler,
 		std::shared_ptr<const Camera> camera,
-		const std::vector<std::shared_ptr<Film>>& _films);
+		const std::vector<std::shared_ptr<Film>>& _films,
+		const std::shared_ptr<Material>& _pMaterial);
 
 }  // namespace pbrt
 

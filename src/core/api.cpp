@@ -1264,12 +1264,17 @@ void pbrtTexture(const std::string &name, const std::string &type,
         Error("Texture type \"%s\" unknown.", type.c_str());
 }
 
+std::shared_ptr<Material> g_pPhong = nullptr;
+
 void pbrtMaterial(const std::string &name, const ParamSet &params) {
     VERIFY_WORLD("Material");
     ParamSet emptyParams;
     TextureParams mp(params, emptyParams, *graphicsState.floatTextures,
                      *graphicsState.spectrumTextures);
     std::shared_ptr<Material> mtl = MakeMaterial(name, mp);
+	if (name == "phong")
+		g_pPhong = mtl;
+
     graphicsState.currentMaterial =
         std::make_shared<MaterialInstance>(name, mtl, params);
 
@@ -1710,8 +1715,17 @@ Integrator *RenderOptions::MakeIntegrator() const {
         integrator = CreatePathIntegrator(IntegratorParams, sampler, camera);
 	else if (IntegratorName == "superpath")
 	{
+		//std::shared_ptr<Material> pPhong = nullptr;
+		//auto it = graphicsState.namedMaterials->find("phong");
+		//if (it != graphicsState.namedMaterials->end())
+		//{
+		//	pPhong = it->second->material;
+		//}
+
+		//auto pPhong = CreatePhongMaterial(mp);
 		integrator = CreateSuperPathIntegrator(IntegratorParams, sampler, camera,
-			MakeFilmEx(sampler->samplesPerPixel, FilmParams, FilterName, FilterParams));
+			MakeFilmEx(sampler->samplesPerPixel, FilmParams, FilterName, FilterParams),
+			g_pPhong);
 	}
     else if (IntegratorName == "volpath")
         integrator = CreateVolPathIntegrator(IntegratorParams, sampler, camera);

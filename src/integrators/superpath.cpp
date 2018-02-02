@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "paramset.h"
 #include "scene.h"
 #include "stats.h"
+#include <fstream>
 
 namespace pbrt {
 
@@ -50,15 +51,27 @@ namespace pbrt {
 		std::shared_ptr<const Camera> camera,
 		std::shared_ptr<Sampler> sampler,
 		const Bounds2i &pixelBounds,
-		const std::vector<std::shared_ptr<Film>>& _films, 
+		const std::vector<std::shared_ptr<Film>>& _films,
+		const std::shared_ptr<Material>& _pMaterial,
 		Float rrThreshold,
 		const std::string &lightSampleStrategy)
 		: SamplerIntegrator(camera, sampler, pixelBounds, _films),
 		maxDepth(maxDepth),
 		rrThreshold(rrThreshold),
-		lightSampleStrategy(lightSampleStrategy)
+		lightSampleStrategy(lightSampleStrategy),
+		m_pMaterial(_pMaterial)
 	{
+		m_Isect = {};
+	}
 
+	Vector3f SuperPathIntegrator::ComputeWh(const Point2f &u)
+	{
+		if (m_Isect.bsdf != nullptr)
+		{
+			return m_Isect.bsdf->GetWh(u);
+		}
+
+		return {};
 	}
 
 	void SuperPathIntegrator::Preprocess(const Scene &scene, Sampler &sampler)
@@ -69,8 +82,8 @@ namespace pbrt {
 		std::unique_ptr<Sampler> pLightSampler = sampler.Clone(0xB00B5); // 0xB00B5
 		pLightSampler->StartPixel({});
 
-		std::unique_ptr<Sampler> pScatterSampler = sampler.Clone(0xA55A55); // 0xA55A55
-		pScatterSampler->StartPixel({});
+		//std::unique_ptr<Sampler> pScatterSampler = sampler.Clone(0xA55A55); // 0xA55A55
+		//pScatterSampler->StartPixel({});
 
 		uLights.resize(sampler.samplesPerPixel);
 		uScatters.resize(sampler.samplesPerPixel);
@@ -78,7 +91,37 @@ namespace pbrt {
 		for (size_t i = 0; i < sampler.samplesPerPixel; i++)
 		{
 			uLights[i] = pLightSampler->Get2D();
-			uScatters[i] = pScatterSampler->Get2D();
+			uScatters[i] = pLightSampler->Get2D();
+		}
+
+		std::ofstream out("wh.txt");
+
+		if (out.is_open())
+		{
+			if (m_pMaterial != nullptr)
+			{
+				Bounds2i sampleBounds = camera->film->GetSampleBounds();
+				Vector2i sampleExtent = sampleBounds.Diagonal();
+				pbrt::Point2i pixel;
+				pixel.x = sampleExtent.x / 2;
+				pixel.y = sampleExtent.y / 2;
+
+				// Initialize _CameraSample_ for current sample
+				CameraSample cameraSample =	pLightSampler->GetCameraSample(pixel);
+
+				// Generate camera ray for current sample
+				RayDifferential ray;
+				Float rayWeight = camera->GenerateRayDifferential(cameraSample, &ray);
+				ray.ScaleDifferentials(1 / std::sqrt((Float)pLightSampler->samplesPerPixel));
+				bool foundIntersection = scene.Intersect(ray, &m_Isect);
+				m_pMaterial->ComputeScatteringFunctions(&m_Isect, m_Arena, pbrt::TransportMode::Radiance, true);
+			}
+
+			for (auto& u : uScatters) 
+			{
+				out << ComputeWh(u).z << ",";
+			}
+			out.close();
 		}
 
 		//for (size_t i = 0; i < sampler.samplesPerPixel; i++)
@@ -105,9 +148,9 @@ namespace pbrt {
 			lightPdf = Float(1) / nLights;
 		}
 		const std::shared_ptr<Light> &light = scene.lights[lightNum];
-		//Point2f uLight = sampler.Get2D();
+		Point2f uLight = sampler.Get2D();
 		//Point2f uScattering = sampler.Get2D();
-		Point2f uLight = uLights[uCurSample];
+		//Point2f uLight = uLights[uCurSample];
 		Point2f uScattering = uScatters[uCurSample];
 		return EstimateDirectEnv(it, uScattering, *light, uLight,
 			scene, sampler, arena, handleMedia) / lightPdf;
@@ -365,7 +408,8 @@ namespace pbrt {
 	SuperPathIntegrator *CreateSuperPathIntegrator(const ParamSet &params,
 		std::shared_ptr<Sampler> sampler,
 		std::shared_ptr<const Camera> camera,
-		const std::vector<std::shared_ptr<Film>>& _films) {
+		const std::vector<std::shared_ptr<Film>>& _films,
+		const std::shared_ptr<Material>& _pMaterial) {
 		int maxDepth = params.FindOneInt("maxdepth", 5);
 		int np;
 		const int *pb = params.FindInt("pixelbounds", &np);
@@ -385,7 +429,7 @@ namespace pbrt {
 		std::string lightStrategy =
 			params.FindOneString("lightsamplestrategy", "spatial");
 		return new SuperPathIntegrator(maxDepth, camera, sampler, pixelBounds,
-			_films, rrThreshold, lightStrategy);
+			_films, _pMaterial, rrThreshold, lightStrategy);
 	}
 
 }  // namespace pbrt

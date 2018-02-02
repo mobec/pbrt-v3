@@ -416,6 +416,12 @@ Spectrum MicrofacetReflection::Sample_f(const Vector3f &wo, Vector3f *wi,
     return f(wo, *wi);
 }
 
+Vector3f MicrofacetReflection::GetWh(const Point2f & sample, BxDFType * sampledType) const
+{
+	Vector3f woDummy;
+	return distribution->Sample_wh(woDummy, sample);
+}
+
 Float MicrofacetReflection::Pdf(const Vector3f &wo, const Vector3f &wi) const {
     if (!SameHemisphere(wo, wi)) return 0;
     Vector3f wh = Normalize(wo + wi);
@@ -765,6 +771,29 @@ Spectrum BSDF::Sample_f(const Vector3f &woWorld, Vector3f *wiWorld,
     VLOG(2) << "Overall f = " << f << ", pdf = " << *pdf << ", ratio = "
             << ((*pdf > 0) ? (f / *pdf) : Spectrum(0.));
     return f;
+}
+
+Vector3f BSDF::GetWh(const Point2f & u, BxDFType type) const
+{
+	int matchingComps = NumComponents(type);
+	if (matchingComps == 0) {
+		return {};
+	}
+	int comp = std::min((int)std::floor(u[0] * matchingComps), matchingComps - 1);
+	Point2f uRemapped(std::min(u[0] * matchingComps - comp, OneMinusEpsilon), u[1]);
+
+	BxDF *bxdf = nullptr;
+	int count = comp;
+	for (int i = 0; i < nBxDFs; ++i)
+		if (bxdfs[i]->MatchesFlags(type) && count-- == 0) {
+			bxdf = bxdfs[i];
+			break;
+		}
+
+	if (bxdf)
+		return bxdf->GetWh(u);
+
+	return {};
 }
 
 Float BSDF::Pdf(const Vector3f &woWorld, const Vector3f &wiWorld,
