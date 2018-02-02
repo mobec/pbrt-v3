@@ -230,7 +230,7 @@ namespace pbrt {
 				const SurfaceInteraction &isect = (const SurfaceInteraction &)it;
 				f = isect.bsdf->Sample_f(isect.wo, &wi, uScattering, &scatteringPdf,
 					bsdfFlags, &sampledType);
-				f *= AbsDot(wi, isect.shading.n);
+				f = AbsDot(wi, isect.shading.n);
 				sampledSpecular = (sampledType & BSDF_SPECULAR) != 0;
 			}
 			else {
@@ -266,9 +266,9 @@ namespace pbrt {
 						Li = lightIsect.Le(-wi);
 				}
 				else
-					Ld = light.Le(ray);
+					Li = light.Le(ray);
 
-				//if (!Li.IsBlack()) Ld += f * Li * Tr * weight / scatteringPdf;
+				if (!Li.IsBlack()) Ld += f * Li /** Tr * weight / scatteringPdf*/;
 			}
 		}
 		return Ld;
