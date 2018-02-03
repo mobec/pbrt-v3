@@ -75,6 +75,7 @@ namespace pbrt {
 			bool specular = false) const;
 
 		Vector3f ComputeWh(const Point2f &u);
+		Point2f Sample(std::unique_ptr<Sampler>& _pSamler);
 
 	private:
 		// PathIntegrator Private Data

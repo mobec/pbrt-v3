@@ -74,6 +74,24 @@ namespace pbrt {
 		return {};
 	}
 
+	Point2f SuperPathIntegrator::Sample(std::unique_ptr<Sampler>& _pSamler)
+	{
+		const Float fThreshold = Radians(10.f);
+		const Vector3f vNormal = { 0, 0 , 1 };
+		auto goodsample = [&](const Point2f& u) 
+		{
+			Vector3f wh = ComputeWh(u);
+			return std::cos(AbsDot(wh, vNormal)) < fThreshold;
+		};
+
+		Point2f cur = _pSamler->Get2D();
+		while (goodsample(cur) == false)
+		{
+			cur = _pSamler->Get2D();
+		}
+		return cur;
+	}
+
 	void SuperPathIntegrator::Preprocess(const Scene &scene, Sampler &sampler)
 	{
 		// is not really needed because we only have one light
@@ -82,8 +100,8 @@ namespace pbrt {
 		std::unique_ptr<Sampler> pLightSampler = sampler.Clone(0xB00B5); // 0xB00B5
 		pLightSampler->StartPixel({});
 
-		//std::unique_ptr<Sampler> pScatterSampler = sampler.Clone(0xA55A55); // 0xA55A55
-		//pScatterSampler->StartPixel({});
+		std::unique_ptr<Sampler> pScatterSampler = sampler.Clone(0xA55A55); // 0xA55A55
+		pScatterSampler->StartPixel({});
 
 		uLights.resize(sampler.samplesPerPixel);
 		uScatters.resize(sampler.samplesPerPixel);
@@ -91,7 +109,13 @@ namespace pbrt {
 		for (size_t i = 0; i < sampler.samplesPerPixel; i++)
 		{
 			uLights[i] = pLightSampler->Get2D();
-			uScatters[i] = pLightSampler->Get2D();
+		}
+
+		uScatters[0] = {};
+
+		for (size_t i = 1; i < sampler.samplesPerPixel; i++)
+		{
+			uScatters[i] = Sample(pScatterSampler);
 		}
 
 		std::ofstream out("wh.txt");
