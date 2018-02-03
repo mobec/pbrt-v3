@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pbrt.h"
 #include "integrator.h"
 #include "lightdistrib.h"
+#include <random>
 
 namespace pbrt {
 
@@ -89,6 +90,8 @@ namespace pbrt {
 		MemoryArena m_Arena;
 		SurfaceInteraction m_Isect;
 
+		std::default_random_engine m_Generator;
+		std::normal_distribution<float> m_NormalDist;
 	};
 
 	SuperPathIntegrator *CreateSuperPathIntegrator(const ParamSet &params,

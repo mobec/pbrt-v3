@@ -60,7 +60,8 @@ namespace pbrt {
 		maxDepth(maxDepth),
 		rrThreshold(rrThreshold),
 		lightSampleStrategy(lightSampleStrategy),
-		m_pMaterial(_pMaterial)
+		m_pMaterial(_pMaterial),
+		m_NormalDist(0.f, 1.f)
 	{
 		m_Isect = {};
 	}
@@ -87,7 +88,9 @@ namespace pbrt {
 
 	Point2f SuperPathIntegrator::Sample(std::unique_ptr<Sampler>& _pSamler, const Point2f &alpha)
 	{
-		const Float fThreshold = 0.20; // 10 %
+		float Norm = m_NormalDist(m_Generator);
+		const Float fThreshold = fabsf(Norm); // deviation from normal
+
 		const Vector3f vNormal = { 0, 0 , 1 };
 		const auto goodsample = [&](const Point2f& u) 
 		{
@@ -100,7 +103,6 @@ namespace pbrt {
 		while (goodsample(cur) == false)
 		{
 			cur = _pSamler->Get2D();
-			//cur = Lerp(0.5, _pSamler->Get2D(), alpha);
 		}
 		return cur;
 	}
