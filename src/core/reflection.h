@@ -183,6 +183,8 @@ class BSDF {
                       BxDFType *sampledType = nullptr) const;
 
 	Vector3f GetWh(const Point2f &u,BxDFType type = BSDF_ALL) const;
+	Float GetAlpha(const Point2f &u, BxDFType type = BSDF_ALL) const;
+	BxDF* GetBxDF(const Point2f &u, BxDFType type = BSDF_ALL) const;
 
     Float Pdf(const Vector3f &wo, const Vector3f &wi,
               BxDFType flags = BSDF_ALL) const;
@@ -222,6 +224,7 @@ class BxDF {
                               BxDFType *sampledType = nullptr) const;
 
 	virtual Vector3f GetWh(const Point2f &sample, BxDFType *sampledType = nullptr) const { return {}; };
+	virtual Float GetAlpha() const { return 1.f; };
 
     virtual Spectrum rho(const Vector3f &wo, int nSamples,
                          const Point2f *samples) const;
@@ -446,6 +449,7 @@ class MicrofacetReflection : public BxDF {
                       Float *pdf, BxDFType *sampledType) const;
 
 	Vector3f GetWh(const Point2f &sample, BxDFType *sampledType = nullptr) const final;
+	Float GetAlpha() const final { return distribution->GetAlpha(); }
 
     Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
     std::string ToString() const;

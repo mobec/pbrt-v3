@@ -418,7 +418,7 @@ Spectrum MicrofacetReflection::Sample_f(const Vector3f &wo, Vector3f *wi,
 
 Vector3f MicrofacetReflection::GetWh(const Point2f & sample, BxDFType * sampledType) const
 {
-	Vector3f woDummy;
+	Vector3f woDummy = {0, 0, 1}; // force same hemisphere
 	return distribution->Sample_wh(woDummy, sample);
 }
 
@@ -773,7 +773,7 @@ Spectrum BSDF::Sample_f(const Vector3f &woWorld, Vector3f *wiWorld,
     return f;
 }
 
-Vector3f BSDF::GetWh(const Point2f & u, BxDFType type) const
+BxDF* BSDF::GetBxDF(const Point2f &u, BxDFType type) const
 {
 	int matchingComps = NumComponents(type);
 	if (matchingComps == 0) {
@@ -786,11 +786,28 @@ Vector3f BSDF::GetWh(const Point2f & u, BxDFType type) const
 	int count = comp;
 	for (int i = 0; i < nBxDFs; ++i)
 		if (bxdfs[i]->MatchesFlags(type) && count-- == 0) {
-			bxdf = bxdfs[i];
-			break;
+			return bxdfs[i];
 		}
 
-	if (bxdf)
+	return nullptr;
+}
+
+
+Float BSDF::GetAlpha(const Point2f &u, BxDFType type) const
+{
+	BxDF* bxdf = GetBxDF(u, type);
+
+	if (bxdf != nullptr)
+		return bxdf->GetAlpha();
+
+	return 1.f;
+}
+
+Vector3f BSDF::GetWh(const Point2f &u, BxDFType type) const
+{
+	BxDF* bxdf = GetBxDF(u, type);
+
+	if (bxdf != nullptr)
 		return bxdf->GetWh(u);
 
 	return {};

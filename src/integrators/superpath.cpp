@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scene.h"
 #include "stats.h"
 #include <fstream>
+#include "samplers\random.h"
 
 namespace pbrt {
 
@@ -74,20 +75,32 @@ namespace pbrt {
 		return {};
 	}
 
-	Point2f SuperPathIntegrator::Sample(std::unique_ptr<Sampler>& _pSamler)
+	Float SuperPathIntegrator::GetAlpha(const Point2f& u)
 	{
-		const Float fThreshold = Radians(10.f);
+		if (m_Isect.bsdf != nullptr)
+		{
+			return m_Isect.bsdf->GetAlpha(u);
+		}
+
+		return 1.f;
+	}
+
+	Point2f SuperPathIntegrator::Sample(std::unique_ptr<Sampler>& _pSamler, const Point2f &alpha)
+	{
+		const Float fThreshold = 0.20; // 10 %
 		const Vector3f vNormal = { 0, 0 , 1 };
-		auto goodsample = [&](const Point2f& u) 
+		const auto goodsample = [&](const Point2f& u) 
 		{
 			Vector3f wh = ComputeWh(u);
-			return std::cos(AbsDot(wh, vNormal)) < fThreshold;
+			Float a = fabsf(Dot(wh, vNormal) - 1.f);
+			return a  < fThreshold;
 		};
 
 		Point2f cur = _pSamler->Get2D();
 		while (goodsample(cur) == false)
 		{
 			cur = _pSamler->Get2D();
+			//cur = Lerp(0.5, _pSamler->Get2D(), alpha);
 		}
 		return cur;
 	}
@@ -100,47 +113,51 @@ namespace pbrt {
 		std::unique_ptr<Sampler> pLightSampler = sampler.Clone(0xB00B5); // 0xB00B5
 		pLightSampler->StartPixel({});
 
-		std::unique_ptr<Sampler> pScatterSampler = sampler.Clone(0xA55A55); // 0xA55A55
+		std::unique_ptr<Sampler> pScatterSampler = std::make_unique<RandomSampler>(sampler.samplesPerPixel, 0xA55A55);
 		pScatterSampler->StartPixel({});
 
 		uLights.resize(sampler.samplesPerPixel);
 		uScatters.resize(sampler.samplesPerPixel);
+
+		if (m_pMaterial != nullptr)
+		{
+			Bounds2i sampleBounds = camera->film->GetSampleBounds();
+			Vector2i sampleExtent = sampleBounds.Diagonal();
+			pbrt::Point2i pixel;
+			pixel.x = sampleExtent.x / 2;
+			pixel.y = sampleExtent.y / 2;
+
+			// Initialize _CameraSample_ for current sample
+			CameraSample cameraSample = pLightSampler->GetCameraSample(pixel);
+
+			// Generate camera ray for current sample
+			RayDifferential ray;
+			Float rayWeight = camera->GenerateRayDifferential(cameraSample, &ray);
+			ray.ScaleDifferentials(1 / std::sqrt((Float)pLightSampler->samplesPerPixel));
+			bool foundIntersection = scene.Intersect(ray, &m_Isect);
+			m_pMaterial->ComputeScatteringFunctions(&m_Isect, m_Arena, pbrt::TransportMode::Radiance, true);
+		}
 
 		for (size_t i = 0; i < sampler.samplesPerPixel; i++)
 		{
 			uLights[i] = pLightSampler->Get2D();
 		}
 
-		uScatters[0] = {};
+		const Float alpha = GetAlpha({});
+		uScatters[0] = { alpha + 1.f, 0.f}; // force wh == normal
 
 		for (size_t i = 1; i < sampler.samplesPerPixel; i++)
 		{
-			uScatters[i] = Sample(pScatterSampler);
+			if (m_Isect.bsdf != nullptr)
+				uScatters[i] = Sample(pScatterSampler, uScatters[0]);
+			else
+				uScatters[i] = pScatterSampler->Get2D();
 		}
 
 		std::ofstream out("wh.txt");
 
 		if (out.is_open())
-		{
-			if (m_pMaterial != nullptr)
-			{
-				Bounds2i sampleBounds = camera->film->GetSampleBounds();
-				Vector2i sampleExtent = sampleBounds.Diagonal();
-				pbrt::Point2i pixel;
-				pixel.x = sampleExtent.x / 2;
-				pixel.y = sampleExtent.y / 2;
-
-				// Initialize _CameraSample_ for current sample
-				CameraSample cameraSample =	pLightSampler->GetCameraSample(pixel);
-
-				// Generate camera ray for current sample
-				RayDifferential ray;
-				Float rayWeight = camera->GenerateRayDifferential(cameraSample, &ray);
-				ray.ScaleDifferentials(1 / std::sqrt((Float)pLightSampler->samplesPerPixel));
-				bool foundIntersection = scene.Intersect(ray, &m_Isect);
-				m_pMaterial->ComputeScatteringFunctions(&m_Isect, m_Arena, pbrt::TransportMode::Radiance, true);
-			}
-			
+		{			
 			for (size_t i = 0; i <  sampler.samplesPerPixel; i++)
 			{
 				out << ComputeWh(uScatters[i]).z;					

@@ -59,6 +59,8 @@ class MicrofacetDistribution {
         return 1 / (1 + Lambda(wo) + Lambda(wi));
     }
     virtual Vector3f Sample_wh(const Vector3f &wo, const Point2f &u) const = 0;
+	virtual Float GetAlpha() const { return 1.f; }
+
     Float Pdf(const Vector3f &wo, const Vector3f &wh) const;
     virtual std::string ToString() const = 0;
 
@@ -138,6 +140,7 @@ public:
 	Vector3f Sample_wh(const Vector3f &wo, const Point2f &u) const;
 
 	Float G(const Vector3f &wo, const Vector3f &wi) const;
+	Float GetAlpha() const final { return alpha; }
 
 	std::string ToString() const;
 
