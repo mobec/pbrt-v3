@@ -78,7 +78,7 @@ namespace pbrt {
 		Vector3f ComputeWh(const Point2f &u);
 		Float GetAlpha(const Point2f &u);
 
-		Point2f Sample(std::unique_ptr<Sampler>& _pSamler, const Point2f &u);
+		Point2f Sample(Sampler& _Samler, const Point2f &u);
 
 	private:
 		// PathIntegrator Private Data

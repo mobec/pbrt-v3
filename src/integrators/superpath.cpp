@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scene.h"
 #include "stats.h"
 #include <fstream>
-#include "samplers\random.h"
+#include "samplers/random.h"
 
 namespace pbrt {
 
@@ -86,7 +86,7 @@ namespace pbrt {
 		return 1.f;
 	}
 
-	Point2f SuperPathIntegrator::Sample(std::unique_ptr<Sampler>& _pSamler, const Point2f &alpha)
+	Point2f SuperPathIntegrator::Sample(Sampler& _Samler, const Point2f &alpha)
 	{
 		float Norm = m_NormalDist(m_Generator);
 		const Float fThreshold = fabsf(Norm); // deviation from normal
@@ -99,10 +99,10 @@ namespace pbrt {
 			return a  < fThreshold;
 		};
 
-		Point2f cur = _pSamler->Get2D();
+		Point2f cur = _Samler.Get2D();
 		while (goodsample(cur) == false)
 		{
-			cur = _pSamler->Get2D();
+			cur = _Samler.Get2D();
 		}
 		return cur;
 	}
@@ -115,8 +115,8 @@ namespace pbrt {
 		std::unique_ptr<Sampler> pLightSampler = sampler.Clone(0xB00B5); // 0xB00B5
 		pLightSampler->StartPixel({});
 
-		std::unique_ptr<Sampler> pScatterSampler = std::make_unique<RandomSampler>(sampler.samplesPerPixel, 0xA55A55);
-		pScatterSampler->StartPixel({});
+		RandomSampler ScatterSampler = RandomSampler((int)sampler.samplesPerPixel, 0xA55A55);
+		ScatterSampler.StartPixel({});
 
 		uLights.resize(sampler.samplesPerPixel);
 		uScatters.resize(sampler.samplesPerPixel);
@@ -151,9 +151,9 @@ namespace pbrt {
 		for (size_t i = 1; i < sampler.samplesPerPixel; i++)
 		{
 			if (m_Isect.bsdf != nullptr)
-				uScatters[i] = Sample(pScatterSampler, uScatters[0]);
+				uScatters[i] = Sample(ScatterSampler, uScatters[0]);
 			else
-				uScatters[i] = pScatterSampler->Get2D();
+				uScatters[i] = ScatterSampler.Get2D();
 		}
 
 		std::string sFilename = camera->film->filename;
