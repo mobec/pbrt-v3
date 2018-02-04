@@ -137,7 +137,7 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
         if (f.IsBlack() || pdf == 0.f) break;
         beta *= f * AbsDot(wi, isect.shading.n) / pdf;
         VLOG(2) << "Updated beta = " << beta;
-        CHECK_GE(beta.y(), 0.f);
+        //CHECK_GE(beta.y(), 0.f);
         DCHECK(!std::isinf(beta.y()));
         specularBounce = (flags & BSDF_SPECULAR) != 0;
         if ((flags & BSDF_SPECULAR) && (flags & BSDF_TRANSMISSION)) {
