@@ -156,7 +156,20 @@ namespace pbrt {
 				uScatters[i] = pScatterSampler->Get2D();
 		}
 
-		std::ofstream out("wh.txt");
+		std::string sFilename = camera->film->filename;
+
+		size_t start = sFilename.find_last_of("/\\");
+
+		if (start < std::string::npos)
+		{
+			sFilename.replace(start+1, sFilename.length() - start-1, "wh.txt");
+		}
+		else
+		{
+			sFilename = "wh.txt";
+		}
+
+		std::ofstream out(sFilename);
 
 		if (out.is_open())
 		{			
